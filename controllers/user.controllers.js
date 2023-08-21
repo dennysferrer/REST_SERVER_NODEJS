@@ -1,22 +1,31 @@
 
 const usuariosGet = (req, res) => {
+    const { q, nombre, apikey } = req.query;
     res.json({
         "ok": true,
-        "message": "Peticion GET"
+        "message": "Peticion GET",
+        q,
+        nombre,
+        apikey
     });
 };
 
 const usuariosPut = (req, res) => {
+    const id = req.params.id;
     res.json({
         "ok": true,
-        "message": "Peticion PUT"
+        "message": "Peticion PUT",
+        id
     });
 };
 
 const usuariosPost = (req, res) => {
+    const { nombre, edad } = req.body;
     res.json({
         "ok": true,
-        "message": "Peticion POST"
+        "message": "Peticion POST",
+        nombre,
+        edad
     });
 };
 
