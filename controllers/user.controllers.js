@@ -1,38 +1,70 @@
+const Usuario = require('../models/usuario');
+const bcryptjs = require('bcryptjs');
 
-const usuariosGet = (req, res) => {
-    const { q, nombre, apikey } = req.query;
+
+const usuariosGet = async (req, res) => {
+    //const { q, nombre, apikey } = req.query;
+    const { limite = 5, desde = 0 } = req.query;
+
+
+    const [total, usuarios] = await Promise.all([
+        Usuario.countDocuments({estado: true}),
+        await Usuario.find({estado: true})
+            .skip(desde)
+            .limit(limite)
+    ]);
+
     res.json({
-        "ok": true,
-        "message": "Peticion GET",
-        q,
-        nombre,
-        apikey
+        total,
+        usuarios
     });
 };
 
-const usuariosPut = (req, res) => {
-    const id = req.params.id;
+const usuariosPut = async (req, res) => {
+    const { id } = req.params;
+    const { _id, password, google, ...resto } = req.body;
+
+    //TODO Validar frente a base de datos
+
+    if (password){
+        const salt = bcryptjs.genSaltSync(10)
+        resto.password = bcryptjs.hashSync(password, salt);
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate(id, resto);
+
     res.json({
-        "ok": true,
         "message": "Peticion PUT",
-        id
+        usuario
     });
 };
 
-const usuariosPost = (req, res) => {
-    const { nombre, edad } = req.body;
+const usuariosPost = async (req, res) => {
+
+    const {nombre, correo, password, role} = req.body;
+    const usuario = new Usuario({nombre, correo, password, role});
+
+    //Encriptar la contraseña
+    const salt = bcryptjs.genSaltSync(10)
+    usuario.password = bcryptjs.hashSync(password, salt);
+
+    await usuario.save();
     res.json({
         "ok": true,
         "message": "Peticion POST",
-        nombre,
-        edad
+        usuario
     });
 };
 
-const usuariosDelete = (req, res) => {
+const usuariosDelete = async (req, res) => {
+
+    const { id } = req.params;
+
+    const usuario = await Usuario.findByIdAndUpdate(id, {estado:false});
+
     res.json({
-        "ok": true,
-        "message": "Peticion DELETE"
+        "msg":"Usuario borrado",
+        usuario
     });
 };
 
